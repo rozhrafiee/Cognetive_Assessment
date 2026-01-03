@@ -12,6 +12,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, role, isBlocked }) => {
   const menuItems = [
     { id: 'dashboard', label: 'داشبورد', icon: '📊', roles: [UserRole.CITIZEN, UserRole.TEACHER, UserRole.ADMIN] },
+    { id: 'profile', label: 'پروفایل من', icon: '👤', roles: [UserRole.CITIZEN, UserRole.TEACHER, UserRole.ADMIN] },
     { id: 'placement', label: 'تعیین سطح', icon: '🎯', roles: [UserRole.CITIZEN] },
     { id: 'library', label: 'کتابخانه محتوا', icon: '📚', roles: [UserRole.CITIZEN], disabled: isBlocked },
     { id: 'teacher', label: 'پنل استاد', icon: '👨‍🏫', roles: [UserRole.TEACHER] },
@@ -35,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, role, isBloc
             onClick={() => setActiveTab(item.id)}
             className={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all ${
               activeTab === item.id 
-                ? 'bg-indigo-50 text-indigo-700 font-bold' 
+                ? 'bg-indigo-50 text-indigo-700 font-bold shadow-sm' 
                 : item.disabled ? 'opacity-50 cursor-not-allowed grayscale' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
@@ -48,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, role, isBloc
       <div className="p-4 border-t border-slate-100">
         <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-2xl text-white">
           <p className="text-xs font-medium opacity-80">وضعیت سامانه</p>
-          <p className="text-sm font-bold">اتصال پایدار</p>
+          <p className="text-sm font-bold">اتصال پایدار (هوشمند)</p>
           <div className="mt-3 bg-white/20 h-1.5 rounded-full overflow-hidden">
             <div className="bg-white w-full h-full"></div>
           </div>

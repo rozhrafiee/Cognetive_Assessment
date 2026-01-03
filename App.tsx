@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, UserRole, Content, Exam, Attempt, SystemAlert } from './types';
+import { User, UserRole, Content, Exam, Attempt, SystemAlert, QuestionType } from './types';
 import { MOCK_CONTENTS, MOCK_EXAMS, PLACEMENT_EXAM, MOCK_TEACHER, MOCK_ADMIN } from './constants';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
@@ -11,6 +11,7 @@ import TeacherPanel from './pages/TeacherPanel';
 import AdminPanel from './pages/AdminPanel';
 import ExamPage from './pages/ExamPage';
 import AuthPage from './pages/AuthPage';
+import ProfilePage from './pages/ProfilePage';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -48,6 +49,10 @@ const App: React.FC = () => {
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem('cogni_session', JSON.stringify(currentUser));
+      // Update users db to reflect changes (e.g. name update)
+      const usersDb = JSON.parse(localStorage.getItem('cogni_users_db') || '[]');
+      const updatedDb = usersDb.map((u: User) => u.id === currentUser.id ? currentUser : u);
+      localStorage.setItem('cogni_users_db', JSON.stringify(updatedDb));
     }
     localStorage.setItem('cogni_attempts', JSON.stringify(attempts));
     localStorage.setItem('cogni_contents', JSON.stringify(contents));
@@ -67,30 +72,48 @@ const App: React.FC = () => {
     localStorage.removeItem('cogni_session');
   };
 
+  const calculatePlacementScore = (answers: any) => {
+    const exam = PLACEMENT_EXAM;
+    let correct = 0;
+    let mcqCount = 0;
+    exam.questions.forEach(q => {
+      if (q.type === QuestionType.MCQ) {
+        mcqCount++;
+        if (answers[q.id] === q.correctOption) correct++;
+      }
+    });
+    // For simplicity, we give 60 points for the MCQ part and assume 20 for descriptive
+    const score = mcqCount > 0 ? (correct / mcqCount) * 80 + 10 : 75; 
+    return Math.round(score);
+  };
+
   const handleCompleteExam = (examId: string, answers: any, finalScore?: number) => {
     if (!currentUser) return;
+    
+    const computedScore = finalScore ?? (examId === 'placement' ? calculatePlacementScore(answers) : undefined);
+
     const newAttempt: Attempt = {
       id: Math.random().toString(36).substr(2, 9),
       userId: currentUser.id,
       examId,
       answers,
-      score: finalScore,
-      isGraded: finalScore !== undefined,
+      score: computedScore,
+      isGraded: computedScore !== undefined,
       date: new Date().toISOString()
     };
 
     setAttempts(prev => [...prev, newAttempt]);
     
-    if (finalScore !== undefined) {
-      // Logic: Update XP and check for Level Up
-      const gainedXp = finalScore * 10;
+    if (computedScore !== undefined) {
+      const gainedXp = computedScore * 10;
       const newXp = (currentUser.xp || 0) + gainedXp;
-      const newLevel = Math.floor(newXp / 1000) + 1; // Example: every 1000 XP is a level
+      const newLevel = Math.floor(newXp / 1000) + 1;
 
       setCurrentUser(prev => prev ? ({ 
         ...prev, 
         xp: newXp,
-        level: examId === 'placement' ? Math.max(1, Math.floor(finalScore / 10)) : Math.max(prev.level, newLevel)
+        level: examId === 'placement' ? Math.max(1, Math.floor(computedScore / 10)) : Math.max(prev.level, newLevel),
+        scoreHistory: [...(prev.scoreHistory || []), { contentId: examId, score: computedScore, date: new Date().toISOString() }]
       }) : null);
     }
     
@@ -130,7 +153,8 @@ const App: React.FC = () => {
               ) : (
                 <>
                   {activeTab === 'dashboard' && <CitizenDashboard user={currentUser} attempts={attempts} alerts={alerts} />}
-                  {activeTab === 'placement' && <PlacementTestPage exam={PLACEMENT_EXAM} onComplete={(ans) => handleCompleteExam('placement', ans, 75)} />}
+                  {activeTab === 'profile' && <ProfilePage user={currentUser} onUpdateUser={setCurrentUser} />}
+                  {activeTab === 'placement' && <PlacementTestPage exam={PLACEMENT_EXAM} onComplete={(ans) => handleCompleteExam('placement', ans)} />}
                   {activeTab === 'library' && <ContentLibrary contents={contents} userLevel={currentUser.level} onStartExam={setSelectedExamId} exams={exams} />}
                   {activeTab === 'teacher' && <TeacherPanel user={currentUser} attempts={attempts} onUpdateAttempts={setAttempts} contents={contents} onUpdateContents={setContents} exams={exams} onUpdateExams={setExams} />}
                   {activeTab === 'admin' && <AdminPanel attempts={attempts} onAddAlert={addAlert} />}

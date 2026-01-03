@@ -1,11 +1,17 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
+// Accessing the API key from process.env which is defined in vite.config.ts
 const apiKey = process.env.API_KEY;
-const ai = new GoogleGenAI({ apiKey: apiKey! });
 
 export const getCognitiveInsight = async (userName: string, scores: any[]) => {
+  if (!apiKey) {
+    console.warn("API Key is missing. AI features will be disabled.");
+    return "کلید API یافت نشد. لطفاً تنظیمات سیستم را بررسی کنید.";
+  }
+
   try {
+    const ai = new GoogleGenAI({ apiKey });
     const prompt = `Based on the following cognitive test scores for user ${userName}: ${JSON.stringify(scores)}, 
     provide a short, motivating cognitive profile summary in Persian. Focus on strengths and areas for growth.`;
 
@@ -25,7 +31,10 @@ export const getCognitiveInsight = async (userName: string, scores: any[]) => {
 };
 
 export const suggestDescriptiveGrade = async (question: string, answer: string) => {
+  if (!apiKey) return { score: 0, reason: "کلید API تنظیم نشده است." };
+
   try {
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Question: ${question}\nUser Answer: ${answer}\nRate this answer from 0 to 100 and give a short reason in Persian.`,

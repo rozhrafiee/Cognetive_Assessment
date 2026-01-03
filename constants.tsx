@@ -7,7 +7,8 @@ export const INITIAL_USER: User = {
   email: 'ali@example.com',
   role: UserRole.CITIZEN,
   level: 0,
-  scoreHistory: []
+  scoreHistory: [],
+  xp: 0
 };
 
 export const MOCK_TEACHER: User = {
@@ -16,7 +17,8 @@ export const MOCK_TEACHER: User = {
   email: 'alavi@edu.ir',
   role: UserRole.TEACHER,
   level: 5,
-  scoreHistory: []
+  scoreHistory: [],
+  xp: 5000
 };
 
 export const MOCK_ADMIN: User = {
@@ -25,26 +27,27 @@ export const MOCK_ADMIN: User = {
   email: 'admin@cogni.ir',
   role: UserRole.ADMIN,
   level: 10,
-  scoreHistory: []
+  scoreHistory: [],
+  xp: 10000
 };
 
 export const PLACEMENT_EXAM: Exam = {
   id: 'placement',
   contentId: 'none',
-  title: 'آزمون تعیین سطح شناختی اولیه',
+  title: 'آزمون تعیین سطح سواد شناختی جامعه',
   isActive: true,
   timeLimit: 20,
   questions: [
     {
       id: 'p1',
-      text: 'کدام یک از مهارت‌های زیر در حل مسائل پیچیده نقش کلیدی دارد؟',
+      text: 'در مواجهه با خبری که احساسات شدیدی (مانند خشم یا ترس) در شما ایجاد می‌کند، اولین اقدام منطقی چیست؟',
       type: QuestionType.MCQ,
-      options: ['تفکر انتقادی', 'حافظه کوتاه‌مدت', 'سرعت تایپ', 'قدرت بدنی'],
-      correctOption: 0
+      options: ['اشتراک‌گذاری فوری برای آگاه‌سازی دیگران', 'بررسی منبع خبر و جستجوی آن در خبرگزاری‌های معتبر', 'نادیده گرفتن کامل خبر', 'ارسال نظر تند زیر پست مربوطه'],
+      correctOption: 1
     },
     {
       id: 'p2',
-      text: 'توضیح دهید چگونه مدیریت زمان می‌تواند بر کاهش استرس شناختی موثر باشد؟',
+      text: 'توضیح دهید "اتاق پژواک" (Echo Chamber) در فضای مجازی چگونه باعث تقویت باورهای غلط می‌شود؟',
       type: QuestionType.DESCRIPTIVE
     }
   ]
@@ -52,28 +55,58 @@ export const PLACEMENT_EXAM: Exam = {
 
 export const MOCK_CONTENTS: Content[] = [
   {
+    id: 's1',
+    title: 'سناریو: بحران در مدیریت شهری',
+    description: 'در نقش یک مدیر شهری، با یک کارزار پخش شایعه درباره کیفیت آب شرب مواجه شده‌اید. تصمیم بگیرید.',
+    type: ContentType.SCENARIO,
+    minLevel: 1,
+    maxLevel: 5,
+    durationMinutes: 10,
+    authorId: 't1',
+    isActive: true,
+    scenarioSteps: [
+      {
+        id: 'start',
+        text: 'ساعت ۸ صبح است. گزارش‌هایی از تجمعات کوچک در منطقه ۲ به دلیل شایعه‌ای مبنی بر آلودگی میکروبی آب به دست شما می‌رسد. شایعه در تلگرام در حال دست‌به‌دست شدن است. چه می‌کنید؟',
+        options: [
+          { text: 'تکذیبیه فوری صادر می‌کنم بدون داشتن نتایج آزمایشگاهی', impact: -10, feedback: 'عجله در تکذیب بدون سند ممکن است بی‌اعتمادی را بیشتر کند.', nextStepId: 'crisis' },
+          { text: 'تیم‌های آزمایشگاهی را اعزام کرده و از مردم می‌خواهم تا زمان نتیجه نهایی آرامش خود را حفظ کنند.', impact: 20, feedback: 'تصمیم درست و مبتنی بر شواهد.', nextStepId: 'results' }
+        ]
+      },
+      {
+        id: 'crisis',
+        text: 'مردم به تکذیبیه شما اعتماد نکرده‌اند و تجمع بزرگتر شده است. رسانه‌های خارجی در حال پوشش اخبار هستند. مرحله بعد؟',
+        options: [
+          { text: 'درخواست برخورد امنیتی با تجمع‌کنندگان', impact: -30, feedback: 'این کار باعث تقویت روایت‌های منفی دشمن می‌شود.', nextStepId: 'end_fail' },
+          { text: 'حضور مستقیم در میان مردم و ارائه شفاف گزارش‌ها', impact: 15, feedback: 'صداقت همیشه بهترین سیاست در جنگ شناختی است.', nextStepId: 'end_success' }
+        ]
+      },
+      {
+        id: 'results',
+        text: 'نتایج آزمایشگاه نشان می‌دهد آب کاملاً سالم است و شایعه توسط یک اکانت جعلی ساخته شده. چگونه اطلاع‌رسانی می‌کنید؟',
+        options: [
+          { text: 'انتشار ویدیو از آزمایشگاه و معرفی منبع شایعه', impact: 40, feedback: 'عالی! شفافیت و افشای منبع تهدید، سواد شناختی جامعه را بالا می‌برد.', nextStepId: 'end_success' }
+        ]
+      },
+      {
+        id: 'end_success', text: 'شما با موفقیت بحران را مدیریت کردید. جامعه اکنون به سیستم مدیریت شهری اعتماد بیشتری دارد.', options: []
+      },
+      {
+        id: 'end_fail', text: 'متأسفانه مدیریت شما باعث تشدید بحران شناختی شد. نیاز به بازآموزی دارید.', options: []
+      }
+    ]
+  },
+  {
     id: 'c1',
-    title: 'اصول حافظه فعال',
-    description: 'آشنایی با مکانیزم‌های ذخیره‌سازی اطلاعات در مغز.',
+    title: 'تکنیک‌های راستی‌آزمایی محتوا',
+    description: 'روش‌های علمی برای تشخیص فیک‌نیوز و بررسی منابع خبری.',
     type: ContentType.TEXT,
     minLevel: 1,
     maxLevel: 3,
     durationMinutes: 15,
     authorId: 't1',
     isActive: true,
-    body: 'حافظه فعال یکی از حیاتی‌ترین بخش‌های سیستم شناختی انسان است...'
-  },
-  {
-    id: 'c2',
-    title: 'تمرکز حواس در محیط کار',
-    description: 'چگونه تمرکز خود را در محیط‌های شلوغ حفظ کنیم؟',
-    type: ContentType.VIDEO,
-    minLevel: 2,
-    maxLevel: 5,
-    durationMinutes: 10,
-    authorId: 't1',
-    isActive: true,
-    videoUrl: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4'
+    body: 'در عصر انفجار اطلاعات، هر شهروند باید یک "دروازه‌بان خبری" باشد. اولین قدم در راستی‌آزمایی...'
   }
 ];
 
@@ -81,15 +114,15 @@ export const MOCK_EXAMS: Exam[] = [
   {
     id: 'e1',
     contentId: 'c1',
-    title: 'کوییز اصول حافظه فعال',
+    title: 'کوییز مهارت‌های راستی‌آزمایی',
     isActive: true,
     timeLimit: 10,
     questions: [
       {
         id: 'q1',
-        text: 'ظرفیت متوسط حافظه فعال چند واحد است؟',
+        text: 'اصطلاح "Deepfake" به چه معناست؟',
         type: QuestionType.MCQ,
-        options: ['۳', '۷', '۱۲', '۲۰'],
+        options: ['عکس‌های قدیمی با کیفیت پایین', 'ویدیوهای جعلی ساخته شده با هوش مصنوعی', 'اخبار منتشر شده در روزنامه‌ها', 'حملات سایبری به سرورها'],
         correctOption: 1
       }
     ]

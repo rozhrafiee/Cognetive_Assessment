@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { UserRole, User } from '../types';
+import { UserRole, User, ScoreRecord } from '../types';
 
 interface AuthPageProps {
   onLogin: (user: User) => void;
@@ -32,6 +32,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
         return;
       }
       
+      // Fix: Added missing 'xp' property to meet 'User' interface requirements.
+      // Initial XP is set based on the starting level associated with the role.
       const newUser: User & { password?: string } = {
         id: Math.random().toString(36).substr(2, 9),
         name: formData.name,
@@ -39,7 +41,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
         password: formData.password,
         role: role,
         level: role === UserRole.CITIZEN ? 0 : 5,
-        scoreHistory: []
+        scoreHistory: [] as ScoreRecord[],
+        xp: role === UserRole.CITIZEN ? 0 : 5000
       };
 
       const updatedUsers = [...users, newUser];

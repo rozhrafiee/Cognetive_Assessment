@@ -10,8 +10,9 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  level: number; // 0 means placement test required
+  level: number;
   scoreHistory: ScoreRecord[];
+  xp: number; // Experience points for gamification
 }
 
 export interface ScoreRecord {
@@ -22,7 +23,19 @@ export interface ScoreRecord {
 
 export enum ContentType {
   TEXT = 'TEXT',
-  VIDEO = 'VIDEO'
+  VIDEO = 'VIDEO',
+  SCENARIO = 'SCENARIO' // New Interactive Scenario type
+}
+
+export interface ScenarioStep {
+  id: string;
+  text: string;
+  options: {
+    text: string;
+    nextStepId?: string;
+    impact: number; // positive or negative cognitive impact
+    feedback: string;
+  }[];
 }
 
 export interface Content {
@@ -37,10 +50,11 @@ export interface Content {
   isActive: boolean;
   body?: string;
   videoUrl?: string;
+  scenarioSteps?: ScenarioStep[]; // For interactive scenarios
 }
 
 export enum QuestionType {
-  MCQ = 'MCQ', // Multiple Choice
+  MCQ = 'MCQ',
   DESCRIPTIVE = 'DESCRIPTIVE'
 }
 
@@ -48,17 +62,17 @@ export interface Question {
   id: string;
   text: string;
   type: QuestionType;
-  options?: string[]; // Only for MCQ
-  correctOption?: number; // Index
+  options?: string[];
+  correctOption?: number;
 }
 
 export interface Exam {
   id: string;
-  contentId: string; // "placement" for placement test
+  contentId: string;
   title: string;
   questions: Question[];
   isActive: boolean;
-  timeLimit: number; // minutes
+  timeLimit: number;
 }
 
 export interface Attempt {
@@ -68,5 +82,13 @@ export interface Attempt {
   answers: Record<string, string | number>;
   score?: number;
   isGraded: boolean;
+  date: string;
+}
+
+export interface SystemAlert {
+  id: string;
+  title: string;
+  message: string;
+  severity: 'low' | 'medium' | 'high';
   date: string;
 }

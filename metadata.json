@@ -1,0 +1,8 @@
+{
+  "name": "سامانه سنجش شناختی",
+  "description": "A comprehensive platform for cognitive evaluation, content management, and gamified progress tracking for citizens, teachers, and administrators.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
